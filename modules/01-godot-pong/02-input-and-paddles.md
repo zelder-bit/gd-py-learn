@@ -79,10 +79,10 @@ Do these once in a scratch scene and they stop being scary:
 
 **Requirements**
 - [x] Four actions are defined in the Input Map, named by you with a consistent scheme (player prefix and direction).
-- [ ] `paddle.tscn` is a standalone scene with a visual, a collision shape, and one script.
-- [ ] The paddle script has exported variables for its up action, down action and speed. The Inspector shows them on each instance.
-- [ ] `main.tscn` instances the paddle scene twice, one on the left and one on the right, with different action names set on each.
-- [ ] The script contains no hard-coded key names (no `KEY_W` and no raw action strings baked into its logic as the only option).
+- [x] `paddle.tscn` is a standalone scene with a visual, a collision shape, and one script.
+- [x] The paddle script has exported variables for its up action, down action and speed. The Inspector shows them on each instance.
+- [x] `main.tscn` instances the paddle scene twice, one on the left and one on the right, with different action names set on each.
+- [x] The script contains no hard-coded key names (no `KEY_W` and no raw action strings baked into its logic as the only option).
 - [ ] Movement is in pixels per second, scaled by `delta`, and runs in the physics tick.
 - [ ] Both paddles are fully clamped inside the viewport, including the paddle's own half height.
 - [ ] Both paddles can move at the same time (two players on one keyboard).
