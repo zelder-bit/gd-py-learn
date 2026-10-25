@@ -30,6 +30,8 @@ Add a line after each session: what you did, what confused you, and any question
 |10-20-2026 | 01-Pong | 10PM - 10:10PM   | Can't find viewport window adjustment.
 |10-20-2026| 01-Pong |10:17 PM | Was treating the spec section like the lesson, woops.|
 |10-20-2026|01-pong|||
+|10-24-2026|01-pong|6:06 PM|Set strecth to canvas so that it resizes automatically. I set the aspect to keep so that the play area doesnt get distorted.|
+|||||
 
 ## Questions for Review
 -
