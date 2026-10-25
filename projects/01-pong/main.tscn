@@ -9,4 +9,4 @@ offset_right = 19.0
 offset_bottom = 72.0
 color = Color(0.6828786, 0.0028052528, 0.929351, 1)
 script = ExtResource("1_ig7tw")
-speed = 250
+speed = 190.556

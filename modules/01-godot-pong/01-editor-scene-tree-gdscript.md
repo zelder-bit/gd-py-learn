@@ -73,14 +73,14 @@ You'll spend your whole Godot life looking up names, so learn these tools on day
 - As the developer, I can see a script print on startup, then move an object at a speed I can tweak without editing code.
 
 **Requirements**
-- [ ] Project exists at `projects/01-pong/`, created with Godot 4.7 and the Git metadata option enabled.
-- [ ] `.gitignore` includes `.godot/` (you verified it by reading the file).
-- [ ] Viewport base size set to a landscape size of your choice (e.g. 1280x720); stretch mode and aspect set intentionally.
-- [ ] A main scene (`main.tscn`) saved and configured as the project's main scene.
-- [ ] A throwaway node with a script that prints in `_ready()`.
-- [ ] That node moves horizontally at a constant speed in pixels per second, independent of frame rate.
-- [ ] The speed is an `@export` variable, typed, editable in the Inspector.
-- [ ] All variables and function signatures in your script have explicit or inferred types.
+- [x] Project exists at `projects/01-pong/`, created with Godot 4.7 and the Git metadata option enabled.
+- [x] `.gitignore` includes `.godot/` (you verified it by reading the file).
+- [x] Viewport base size set to a landscape size of your choice (e.g. 1280x720); stretch mode and aspect set intentionally.
+- [x] A main scene (`main.tscn`) saved and configured as the project's main scene.
+- [x] A throwaway node with a script that prints in `_ready()`.
+- [x] That node moves horizontally at a constant speed in pixels per second, independent of frame rate.
+- [x] The speed is an `@export` variable, typed, editable in the Inspector.
+- [x] All variables and function signatures in your script have explicit or inferred types.
 
 ## Milestones
 

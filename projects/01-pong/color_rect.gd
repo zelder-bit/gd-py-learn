@@ -1,6 +1,6 @@
 extends ColorRect
 
-@export_range(50,250,25) var speed := 200
+@export_range(50,250) var speed := 200.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
