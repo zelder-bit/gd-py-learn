@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://d0pe57adokytc"]
 
-[ext_resource type="Script" uid="uid://clvyygyadijl4" path="res://color_rect.gd" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://dwwa3gegcb0we" path="res://paddle.tscn" id="1_ig7tw"]
 
 [node name="Main" type="Node2D" unique_id=109650123]
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=812884354]
-offset_right = 19.0
-offset_bottom = 72.0
-color = Color(0.6828786, 0.0028052528, 0.929351, 1)
-script = ExtResource("1_ig7tw")
-speed = 190.556
+[node name="paddle_player1" parent="." unique_id=461356011 instance=ExtResource("1_ig7tw")]
+position = Vector2(360, 200)
+
+[node name="paddle_player2" parent="." unique_id=1410124550 instance=ExtResource("1_ig7tw")]
+position = Vector2(1560, 200)
+up_action = "player2_up"
+down_action = "player2_down"
