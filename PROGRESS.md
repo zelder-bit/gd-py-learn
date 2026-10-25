@@ -132,9 +132,10 @@ GDScript reminds me alot of python, which i have used in work / generated a lot 
 ## Lesson 02 · Input & Paddles
 
 ### Session log
+- I'll pick CharacterBody2D because an example you provide says paddles LOL. But because it also has collision auto detected for I imagine it will be the easiest and it expects to be moved unlike a rigid / static one.
 - 
 
 ---
 
 ## Questions for Review
-- 
+-
