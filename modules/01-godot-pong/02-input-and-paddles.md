@@ -78,7 +78,7 @@ Do these once in a scratch scene and they stop being scary:
 - As the developer, I can change which keys a paddle uses without editing the script.
 
 **Requirements**
-- [ ] Four actions are defined in the Input Map, named by you with a consistent scheme (player prefix and direction).
+- [x] Four actions are defined in the Input Map, named by you with a consistent scheme (player prefix and direction).
 - [ ] `paddle.tscn` is a standalone scene with a visual, a collision shape, and one script.
 - [ ] The paddle script has exported variables for its up action, down action and speed. The Inspector shows them on each instance.
 - [ ] `main.tscn` instances the paddle scene twice, one on the left and one on the right, with different action names set on each.
