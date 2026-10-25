@@ -52,6 +52,23 @@ Design question: the two paddles differ by which input actions they respond to. 
 ### 7. Reading the screen size and clamping
 `Viewport.get_visible_rect()`, or the node shortcut `get_viewport_rect()`, returns a `Rect2` of the visible area. The global `clampf()` / `clamp()` functions constrain a value to a min and max. Think about where a paddle's position is measured from (its centre? its top-left?) and how its height changes the bounds.
 
+### 8. Editor workflows you haven't done yet
+Do these once in a scratch scene and they stop being scary:
+- **Add a binding in the Input Map.** Project > Project Settings > **Input Map** tab. Type a name in the "Add New Action" box and press **Add**. The new action appears in the list; click the **+** at the right of its row, then press the physical key in the capture dialog and confirm with OK. Each action can hold several bindings. (If the list looks empty, tick "Show Built-in Actions" only to *see* the `ui_*` defaults; your own actions are listed regardless.)
+- **Create a scene from scratch.** Scene menu > **New Scene**. In the Scene dock, pick a root node type (the "Other Node" button lets you search all types). Save with **Ctrl+S**; the dialog asks for a path under `res://` and a file name, and the file is a `.tscn`. A scene's root is the node whose script and exports define the scene's public face.
+- **Give a body a physical shape.** Select the body root, press the **+** (Add Child Node) button, pick `CollisionShape2D`. It shows a warning triangle because its `shape` property is empty. In the Inspector click the empty **Shape** slot, choose **New RectangleShape2D**, then click the shape itself (it expands) and set its **Size**, or drag the orange handles in the viewport. The shape is a *resource* (a small data object stored inside the scene), distinct from the node that holds it. The same dance works for a visual: add a `ColorRect` child and set its size and colour.
+- **Line a visual up with a shape.** A `CollisionShape2D` is centred on its own position, while a `ColorRect` draws from its top-left corner at its own position. So two equal sizes will not overlap until you offset one of them. Turn on Debug > Visible Collision Shapes to see the mismatch, then decide which node to move and by how much (the Inspector shows each node's position and size).
+- **Instance a saved scene.** Open the destination scene, then either drag the `.tscn` from the FileSystem dock into the Scene dock/viewport, or use the chain-link **Instantiate Child Scene** button at the top of the Scene dock. Instances show a "clapperboard" icon. Selecting one shows its root node's properties, including the `@export`s from the script, and edits made there are stored in the *destination* scene's file, not in the original.
+
+**Bridge:** the saved scene is the template; each instance in `main.tscn` is a small diff (overrides) layered on top, much like a Helm chart plus a values file.
+
+### 9. Language mechanics for this lesson
+- **Typed exports for names.** `@export var mode: String = "idle"` puts a text box in the Inspector. Godot also has `StringName`, an interned, cheap-to-compare string type that the Input API uses for action names. Writing `@export var door_action: StringName = &"open"` works the same way (the `&"..."` literal makes a StringName). Either type is fine here; see the `StringName` class page and the `Input.get_axis` signature to see what it accepts.
+- **A variable can be passed straight in.** `Input.is_action_pressed(my_variable)` uses whatever the variable holds, exactly like passing a string argument in JS.
+- **Reading the viewport.** `get_viewport_rect()` returns a `Rect2`, a rectangle with `position` and `size` fields, and `size` is itself a `Vector2`. So reading its height is `rect.size.y`, a chain of property reads like JS `a.b.c`.
+- **Clamping.** `clampf(value, min, max)` returns `value` pulled into the range. It *returns* a result and doesn't change the variable, so assign it back: `lamp_level = clampf(lamp_level, 0.0, 1.0)`.
+- **Reading another node's data.** The collision shape lives in a child node, so a script on the root can reach it with `$CollisionShape2D` (the same `$Name` shortcut as in the `@onready` example in Lesson 01 concept 3), then read `.shape.size` from it. Names in `$` must match the node's name in the Scene dock exactly.
+
 ## Spec
 
 **User stories**
@@ -73,23 +90,39 @@ Design question: the two paddles differ by which input actions they respond to. 
 
 ## Milestones
 
-1. **Define the actions.** In Project Settings > Input Map, add four actions, and bind keys. Press the "+" next to a binding and use the key-capture dialog.
-   ✅ **Done when:** All four actions appear in the list with a binding, and a temporary `print` in a script, using polling for each action, proves each fires only when its key is held. Remove the print afterwards.
+1. **Define the actions.** In Project Settings > Input Map, add four actions, and bind keys (concept 8 has the click path).
+   - **a.** Add the four actions with a naming scheme you can explain (player prefix and direction).
+   - **b.** Bind one key to each.
+   - **c.** Temporarily attach a script to your Lesson 01 throwaway rectangle (it's still there, and is deleted later) and poll each action in `_process`, printing only when pressed.
+   ✅ **Done when:** All four actions appear in the list with a binding, and the temporary `print` proves each fires only when its key is held. Remove the print afterwards.
    *Commit.*
 
-2. **One paddle moves.** Build `paddle.tscn`: pick the root node type (see the table above), give it a visual and a collision shape of matching size, and attach `paddle.gd`. Make it move vertically from input for one hard-coded player first, using polling inside the right callback.
+2. **One paddle moves.** Build `paddle.tscn`. Take it in steps:
+   - **a. New scene.** Scene > New Scene, choose the root type you picked from the table in concept 3, rename the root to something sensible, and save as `paddle.tscn` (concept 8).
+   - **b. Visual and shape.** Add a `ColorRect` and a `CollisionShape2D` with a new `RectangleShape2D` of matching size, and make them line up (concept 8). Check with Debug > Visible Collision Shapes.
+   - **c. Script.** Attach `paddle.gd` to the *root*. Use the F1/Ctrl+click tools from Lesson 01 concept 7 to find the `Input` axis helper in the hints below.
+   - **d. Instance it once** into `main.tscn` so you can press F5, and move it vertically from input for one hard-coded player, using polling inside the right callback (concept 6).
    ✅ **Done when:** In the running game, holding the up key moves it up at a steady speed, holding the down key moves it down, releasing stops it. Holding both does not move it (net zero). Speed doesn't change if you alter Max FPS.
    *Commit.*
 
 3. **Make the controls a parameter.** Add `@export` variables so that the paddle's actions and speed come from the Inspector. Make the script read them instead of fixed names.
+   - **a.** Declare the exports at the top of the file (concept 9 covers the types), save, and confirm they appear in the Inspector on the paddle instance.
+   - **b.** Give each a default that matches your first player's actions.
+   - **c.** Replace each fixed name in your movement code with the matching variable.
    ✅ **Done when:** Changing the exported action names on the instance in the Inspector changes which keys control it, with no script edit.
    *Commit.*
 
 4. **Instance it twice.** In `main.tscn`, instance the paddle scene twice, position one at the left and one at the right, and set the second instance's actions to the other player's. Delete the Lesson 01 throwaway.
+   - **a. Guided walkthrough (optional, ~15 min).** If instancing felt shaky, read the official [Instancing](https://docs.godotengine.org/en/stable/getting_started/step_by_step/instancing.html) tutorial in a throwaway scene, typing nothing into your project, then close it.
+   - **b.** Add the second instance and rename the two nodes so the tree reads clearly (for example by player).
+   - **c.** Select each instance, move it, and override its exports in the Inspector. Watch that `paddle.tscn` doesn't show as modified in git.
    ✅ **Done when:** Both paddles are controlled independently at the same time (hold W and Up simultaneously and both move). `paddle.tscn` and `paddle.gd` are unchanged after setting up the second instance beyond the first.
    *Commit.*
 
 5. **Clamp to the viewport.** Restrict vertical position to the visible area, taking the paddle's size into account.
+   - **a. On paper.** With the viewport height and the paddle's height as symbols, write the smallest and largest legal `position.y`, given where the origin sits (concept 7).
+   - **b. Find the inputs.** Work out how your script will read the viewport height and the paddle's height (concept 9).
+   - **c. Apply.** Constrain the position right after you move it in the same tick, and test against both edges.
    ✅ **Done when:** Holding a direction key against an edge leaves the paddle's visible edge exactly flush with the window edge: no gap, no overshoot, no jitter. Changing the viewport height in Project Settings (Lesson 01) keeps working without code changes, and changing the paddle's size in the Inspector too (if you derive it from the node rather than a literal).
    *Commit.*
 

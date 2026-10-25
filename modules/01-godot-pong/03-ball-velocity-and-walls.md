@@ -63,6 +63,27 @@ Random direction means a random angle, not a random `x` and `y` independently. A
 
 **Bridge:** like constraining a jittered retry backoff: random, but within bounds that guarantee useful behavior.
 
+### 7. Language mechanics you haven't used yet
+- **Member variables across callbacks.** A variable declared at the top of the file (Lesson 01 concept 6) is visible to every function in it. So `_ready()` can *assign* a value once, and `_physics_process()` can *read and update* it on every tick. A variable declared inside `_ready()` dies when it returns and is invisible elsewhere, which is the usual cause of "my value is always zero".
+  ```gdscript
+  var heading := Vector2.ZERO   # file level: shared and persistent
+  ```
+- **`if` and `null`.** `if` takes a condition and an indented block; `elif` and `else` chain. A value that might be absent is tested with `if thing != null:` or simply `if thing:`. Inside the block the object is safe to use. Outside it, it may not be.
+  ```gdscript
+  var hit := door.try_open()
+  if hit != null: print(hit.name)
+  ```
+- **Return values.** `move_and_collide` is a function whose result you *store* in a variable (as above) and then inspect. If you ignore the return value you can't know what happened. Typing the variable as the class it returns lets autocomplete list its methods, so try it.
+- **Random numbers.** The global functions `randf()`, `randf_range(from, to)`, `randi()` and `randi_range(from, to)` need no import; the `@GlobalScope` page lists them. `randf_range(2.0, 5.0)` is a float anywhere in that range, and `randi_range(0, 1)` is an int that's either 0 or 1. Two lines of arithmetic turn "0 or 1" into "-1 or 1": think about it.
+- **Building a Vector2.** The constructor takes two numbers: `Vector2(3.0, 4.0)`. Constants such as `Vector2.ZERO`, `Vector2.LEFT` and `Vector2.DOWN` exist. Components are readable and writable (`v.x`), and `Vector2` supports `*` by a number and `+` between vectors. A static method like `Vector2.from_angle(angle)` is called on the *class*, not on an existing vector.
+- **Placing at the centre.** To put things at the viewport centre, reuse `get_viewport_rect()` from Lesson 02 concept 9. `Rect2` also has a `get_center()` method.
+
+### 8. Editor workflows for this lesson
+- **A wall from scratch.** Add a `StaticBody2D`, add a `CollisionShape2D` child, give it a **New RectangleShape2D**, and size it (Lesson 02 concept 8). `StaticBody2D` has no built-in visual; add a `ColorRect` child if you want one, or rely on Visible Collision Shapes.
+- **Making a copy.** In the Scene dock, **Ctrl+D** duplicates the selected node and its children. A duplicated `CollisionShape2D` *shares* its `RectangleShape2D` resource with the original unless you make it unique (Inspector: the resource's dropdown menu > Make Unique). Lesson 02's last debugging row describes the same trap.
+- **Placement by Inspector.** For a precise position, type numbers into the Inspector's `position` field rather than dragging. Keep in mind the origin rules from Lesson 02.
+- **Same instancing as before.** Save the ball as its own scene and drop it into `main.tscn` exactly as you did the paddle.
+
 ## Spec
 
 **User stories**
@@ -86,14 +107,23 @@ Random direction means a random angle, not a random `x` and `y` independently. A
    `git commit -m "Add ball scene"`
 
 2. **Constant-speed serve.** On `_ready`, compute a random serve direction (limited angle range, random side) and move the ball every physics frame in that direction at your exported speed. No walls yet.
+   - **a. Straight line first.** Hard-code a direction in a member variable and get the ball moving with `move_and_collide` in `_physics_process`. Remember the argument is a per-step displacement (concept 2), not a velocity.
+   - **b. Move the direction into `_ready`.** Replace the hard-coded value with an assignment made in `_ready()`, still a fixed direction. This proves the member-variable plumbing (concept 7).
+   - **c. Randomise.** On paper, write the allowed angle band and the left/right rule, then turn it into a direction with the functions in concept 7. Print the angle in degrees to check the band.
    ✅ Done when: ten consecutive runs produce visibly different serve angles, always heading left or right, never nearly vertical, and the ball's speed is the same on every run.
    `git commit -m "Ball serves with random direction at constant speed"`
 
 3. **Walls.** Add two `StaticBody2D` walls (top and bottom, each with a rectangular collision shape wider than the viewport). Consider giving the wall its own small scene or just two nodes in Main.
+   - **a.** Build one wall (concept 8) and work out its size and position from the viewport size on paper. A shape centred on the edge covers half of itself off-screen.
+   - **b.** Duplicate it for the other edge, make the shape unique if you need a different size, and position by Inspector.
+   - **c.** Check both with Visible Collision Shapes.
    ✅ Done when: with visible collision shapes on, both walls are visible lines just outside (or exactly at) the screen edges, and a ball aimed at one stops at it rather than passing through (a temporary stop is fine for this milestone).
    `git commit -m "Add top and bottom walls"`
 
 4. **Bounce.** On wall contact, reflect the direction using the surface normal from the collision info.
+   - **a.** Store the result of the move call in a local variable and `print` whether it's null on each tick. Most ticks should say yes.
+   - **b.** Guard with an `if` so your code only runs on contact (concept 7), and print the collision's normal there.
+   - **c.** Choose the `Vector2` method from the class reference (Hint 3), confirm with a print that the result heads the way you drew on paper, and store it back into your member variable.
    ✅ Done when: the ball bounces between top and bottom walls for 60 seconds with a steady speed, and a `print()` of the velocity's length on each bounce shows the same value (within float noise) every time.
    `git commit -m "Ball bounces off walls"`
 

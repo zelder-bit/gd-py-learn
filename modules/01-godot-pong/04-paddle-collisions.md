@@ -16,6 +16,12 @@ Choose one and justify it in PROGRESS.md. The brief for design: the ball should 
 
 **Bridge:** groups are resource tags (`Environment=prod`): a label you filter on, rather than a hard type. A type check is more like requiring a specific AMI ID.
 
+**Mechanics you'll need (first use):**
+- *Adding a node to a group in the editor.* Select the node (in `paddle.tscn`, select the **root**, so every instance inherits it) → **Node** dock (next to the Inspector) → **Groups** tab → type a name in the box → **Add**. Reopen the tab to confirm it's listed. In code, `add_to_group("lamps")` does the same thing at runtime.
+- *Asking the question.* `some_node.is_in_group("lamps")` returns a `bool`. Compare to checking a tag on a resource.
+- *What `get_collider()` gives you.* The collision result's `collider` is typed as a generic object, not as a specific node type, so the editor won't autocomplete node properties on it. Two ways around that: declare a typed local with a cast, `var door := thing as Node2D` (gives `null` if `thing` isn't a `Node2D`), or test first with `if thing is Node2D:`. `is` asks "is this that type?", `as` converts or gives `null`. Both are `instanceof`/a checked cast in other languages. After the cast, `door.global_position` is readable like any property.
+- *Printing which branch ran.* A one-line `print("wall")` in each branch of an `if / else` is your whole test harness for milestone 2.
+
 ### 2. Hit offset becomes a bounce angle
 Real Pong feels good because *where* you strike the ball steers it. The geometry:
 
@@ -40,6 +46,11 @@ What you're building is a **mapping**: *contact point on the paddle* → *outgoi
 Notice you are **not** reflecting off the normal for paddles; you're *overwriting* the direction using the offset. That's the "arcade physics" trick: a lie that plays better than the truth. Consider why the reflect result would feel bad on a flat paddle (every hit would be a pure horizontal flip, so the rally never changes).
 
 The angle-to-vector step reuses the tool from the serve in Lesson 03. Mapping one range onto another is linear interpolation, and `@GlobalScope` has more than one function for it.
+
+**Mechanics only (the algorithm is still yours):**
+- *Your own function.* Everything so far has been callbacks Godot calls for you. You can also define helpers and call them yourself, with parameters and a return value: `func is_open(door: Node2D) -> bool:` then `return` something inside, and call it as `if is_open(front_door):`. A helper that takes the inputs of one question and returns the answer is easy to `print()`-test in isolation. Local variables inside it die when it returns (Lesson 01 concept 6).
+- *Reading a position off another node.* Any `Node2D` has `global_position`, a `Vector2`, readable from a different script once you hold a reference to that node. Ctrl+click `global_position` to read how it differs from `position`. Remember `x` and `y` components are readable separately.
+- *Paper-test first.* Pick three hit positions, write the number you expect out for each, then compare to your `print()`. That's the milestone-3 test.
 
 **Bridge:** normalising an offset to −1..1 is like converting a metric to a utilisation percentage so thresholds don't depend on the absolute size of the thing.
 
@@ -66,6 +77,12 @@ Both default to layer 1, which is why everything collides with everything until 
 | Walls | ? | ? |
 
 Fill in that table *on paper first*. Ask: what must the ball collide with? What should paddles collide with (walls? ball? each other?)? Does a wall need to scan anything at all? Name the layers under Project Settings → Layer Names → 2D Physics so the Inspector shows "ball", "paddle", "wall" rather than numbers.
+
+**Editor mechanics (first use):**
+- *Naming layers:* **Project → Project Settings → Layer Names → 2D Physics**, then type a name beside each layer number you plan to use.
+- *Assigning them:* select a body node (e.g. the root of `paddle.tscn`) → Inspector → **Collision** section. **Layer** and **Mask** are rows of numbered toggle squares; click one to flip it, hover for the name you set. Each row has a `...` button to open a bigger editor. Do this on the scene root of `paddle.tscn`/`ball.tscn`, not on a single instance, so both paddles get it.
+- *Where it lives in code:* the same bits are `collision_layer` and `collision_mask` on the node, but the Inspector is the right tool here. `get_collision_layer_value()`/`set_collision_mask_value()` exist (see docs) if you ever need them at runtime.
+- *Negative test:* untick one mask square, run, confirm the symptom, tick it again.
 
 **Bridge:** CCNA mode: layers are VLAN membership or security-group tags; masks are the ingress ACL. Default layer 1 for everything is "one flat /16 with permit any any". It works until it doesn't, and then debugging is painful.
 
@@ -94,11 +111,18 @@ Fill in that table *on paper first*. Ask: what must the ball collide with? What 
    ✅ Done when: the ball bounces off both paddles in a live game and never passes through them at normal speed.
    `git commit -m "Ball bounces off paddles"`
 
-2. **Distinguish paddles from walls.** Introduce a classification mechanism (group, type check, or other) so the ball's code can branch on "paddle vs. other".
+2. **Distinguish paddles from walls.** Introduce a classification mechanism (group, type check, or other) so the ball's code can branch on "paddle vs. other". Take it in steps:
+   - **a.** Pick the mechanism and note why (PROGRESS.md). If groups, add the tag in `paddle.tscn` using the Node dock steps above and verify it shows on both instances.
+   - **b.** In the ball's collision handling, get the collider out of the collision result and ask your question about it. Add the cast from concept 1 if your mechanism needs one.
+   - **c.** Print one word per branch.
    ✅ Done when: a `print()` on each collision says "paddle" or "wall" correctly, 20 out of 20 times, in a play session where you hit both.
    `git commit -m "Ball classifies collisions"`
 
-3. **Angle by hit offset.** For paddle hits only, compute the hit offset (−1..1) and set the outgoing direction from it, heading away from the paddle.
+3. **Angle by hit offset.** For paddle hits only, compute the hit offset (−1..1) and set the outgoing direction from it, heading away from the paddle. Take it in steps:
+   - **a. On paper.** Answer the design questions in concept 2 and write your three expected test values (centre, top edge, bottom edge) with the numbers you expect out.
+   - **b. Get the inputs.** Get the paddle's and ball's `global_position` into locals inside the paddle branch and `print()` them. Move the paddle and confirm they change as you expect.
+   - **c. Build the offset** as its own helper function (parameters in, one number out), and print it for your three paper cases before using it for anything.
+   - **d. Use the result** to set the outgoing direction, and compare the printed angle to your paper values.
    ✅ Done when: printing the offset and the outgoing angle shows ≈0° at the paddle centre and ≈±(max angle) at the edges. Hitting with the paddle's top edge sends the ball upward, bottom edge sends it downward, and the ball always moves away from the paddle you hit.
    `git commit -m "Paddle hit offset controls bounce angle"`
 
@@ -106,7 +130,7 @@ Fill in that table *on paper first*. Ask: what must the ball collide with? What 
    ✅ Done when: with a low cap, a printed speed rises hit by hit, plateaus exactly at the cap, and never exceeds it, even after 30+ hits (use a test rally or set the paddles very wide).
    `git commit -m "Ball speeds up per hit with cap"`
 
-5. **Layers and masks.** Name the layers, assign them per your table, and remove all default-layer-1-for-everyone leftovers.
+5. **Layers and masks.** Name the layers, assign them per your table, and remove all default-layer-1-for-everyone leftovers. Order: **(a)** fill the table on paper, **(b)** name layers in Project Settings, **(c)** set Layer/Mask on the roots of `ball.tscn`, `paddle.tscn` and the wall nodes, **(d)** run the negative test.
    ✅ Done when: your table is in PROGRESS.md; the Inspector shows named layers; and as a negative test, deliberately removing the ball's paddle mask bit makes the ball pass through paddles (then restore it).
    `git commit -m "Configure collision layers and masks"`
 

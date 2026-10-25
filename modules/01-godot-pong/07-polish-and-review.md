@@ -8,6 +8,12 @@
 
 Generate effects instead of downloading them: [jsfxr](https://sfxr.me) (browser-based sfxr, with "Hit/Hurt", "Blip/Select", and "Pickup/Coin" presets) or [jfxr](https://jfxr.frozenfractal.com). Export as `.wav` into your project folder. Keep them short. One thing to check: if a sound can retrigger quickly (rapid paddle hits), does one player cut itself off? Think about how you'd handle it.
 
+**Importing and assigning, step by step:**
+1. Save the `.wav` anywhere under your project folder (a `sounds/` directory keeps it tidy). Godot imports it automatically; it appears in the FileSystem dock. Double-click it, or select it and open the **Import** dock, to see import options (loop, etc.). A one-shot effect should not loop.
+2. Add an `AudioStreamPlayer` node as a child of the node that will own it. Select it and look at its **Stream** property in the Inspector: drag the `.wav` from the FileSystem dock onto that slot (or click the slot and choose Quick Load).
+3. Test in isolation: tick the player's **Autoplay** property and press F6 to hear it on load; untick afterwards. Alternatively, call `play()` from `_ready()` temporarily.
+4. In code, reach it like any child (`@onready var chime: AudioStreamPlayer = $Chime`, then `chime.play()`), or, if the player lives elsewhere in the tree, via an `@export` reference. Three sounds means three players (or one player and a swapped stream; decide which you prefer and why).
+
 **Bridge:** Event-driven side effects, like a Lambda subscribed to an SNS topic. The emitter doesn't know about the sound.
 
 ### 2. Pausing and `process_mode`
@@ -18,11 +24,12 @@ Watch for: timers. `SceneTree.create_timer` takes a `process_always` argument (d
 process_mode = Node.PROCESS_MODE_ALWAYS
 print(get_tree().paused)
 ```
+**Doing it in the editor:** select a node, open the Inspector, expand **Node > Process**, and change **Mode** from Inherit to Always (or When Paused). Everything beneath that node inherits it. The pause key is an *event* (`_unhandled_input` plus `event.is_action_pressed(...)`, Lesson 06 concept 7), and that callback only runs if the node holding it is allowed to process while paused. The pause indicator is just a hidden `Control`/`Label` you show and hide (`visible` or `show()`/`hide()`, Lesson 06 concept 6); think about which node in your tree should hold the logic and which mode it needs. Why can reading `get_tree().paused` be a better source of truth than a variable of your own?
 **Bridge:** `SIGSTOP`/`SIGCONT` on a process group, except you choose which processes are exempt (like your shell).
 
 ### 3. Restart: reload vs. reset
 Two honest strategies:
-- **Reload the scene** (`get_tree().reload_current_scene()`): trivially clean, guarantees fresh state, but any state you wanted to keep (settings, mode choice) vanishes, and in-flight awaits and signal connections die with the old tree.
+- **Reload the scene** (`get_tree().reload_current_scene()`; it takes no arguments and is called on the `SceneTree`, which any node reaches through `get_tree()`): trivially clean, guarantees fresh state, but any state you wanted to keep (settings, mode choice) vanishes, and in-flight awaits and signal connections die with the old tree.
 - **Reset state in place**: keeps what you want, but requires you to know and reset *every* piece of state. Anything you forget is a bug that only shows on the second game.
 
 **Bridge:** Redeploy a fresh immutable instance vs. in-place config mutation. You already have strong opinions about this. It's the same trade-off.
@@ -30,7 +37,7 @@ Two honest strategies:
 Your state machine from Lesson 06 makes the second option much more tractable: entering a state is where resets live.
 
 ### 4. Juice (describe-level only)
-A `Tween` animates properties over time. You get one with `create_tween()` on a node, chain steps with `tween_property`, and it frees itself when done. Ideas: a quick scale pulse on a paddle when hit; a flash of the score label; a tiny screen shake by briefly offsetting a `Camera2D`'s offset with decaying randomness. These are optional. Prioritise the checklist and the review.
+A `Tween` animates properties over time. You get one with `create_tween()` on a node, chain steps with `tween_property`, and it frees itself when done. The shape of a call is `tween.tween_property(object, "property_name", final_value, duration_in_seconds)`, with the property given as a string, e.g. `create_tween().tween_property(lamp, "modulate:a", 0.0, 0.5)` fades a lamp out over half a second. Each further `tween_property` on the same tween runs after the previous one; `set_trans`/`set_ease` shape the curve. Because a tween animates *toward* a value, it needs a known starting point to return to; if two things write the same property, they fight. Ideas: a quick scale pulse on a paddle when hit; a flash of the score label; a tiny screen shake by briefly offsetting a `Camera2D`'s offset with decaying randomness. These are optional. Prioritise the checklist and the review.
 
 **Bridge:** Smoothing and easing is a rate-limiter again: changing a value over time, not instantly.
 
@@ -54,13 +61,21 @@ You're a sysadmin: you know what "works on my machine" costs later. A review is 
 - [ ] `PROGRESS.md` is current and a review is requested.
 
 ## Milestones
-1. **Sound.** Generate and import your effects, and trigger them from the right places.
+1. **Sound.** Generate and import your effects, and trigger them from the right places. Take it in three steps:
+   - **a. One sound, in isolation.** Export one effect, import it, assign it to a player, and make it play once from a temporary `_ready()` (concept 1). Remove the temporary line.
+   - **b. Trigger it from the real event.** Choose who owns the player and which signal or call fires it.
+   - **c. Repeat** for the other two and test rapid retriggering.
    ✅ Done when: each of the three events produces its own sound, in rapid succession without clipping or errors, and no game-object script has more than a line or two dedicated to audio.
    `git commit -m "Add sound effects"`
-2. **Pause.** Toggle pause with a key, with a visible indicator.
+2. **Pause.** Toggle pause with a key, with a visible indicator. Take it in three steps:
+   - **a. Input.** Add a pause action to the Input Map and a handler that prints when it fires (concept 2).
+   - **b. Freeze.** Make the tree pause and confirm what stops. Use the Remote tree and the Debugging Toolkit below to find anything that doesn't.
+   - **c. Keep the handler alive and show the indicator.** Set the `process_mode` of the right node(s) in the Inspector.
    ✅ Done when: while paused, the ball, paddles, CPU and any serve countdown do not advance; pressing the key again resumes exactly where you left off; the pause key still works while paused.
    `git commit -m "Add pause"`
-3. **Restart.** Choose reload or reset and implement it.
+3. **Restart.** Choose reload or reset and implement it. Take it in two steps:
+   - **a. Inventory.** List every piece of state that changes during a game and where it lives (a scene node, an `@export`, the tree, an autoload), before you choose.
+   - **b. Implement** your choice, wired to the same start key from Lesson 06 or a dedicated action, and run two games back to back.
    ✅ Done when: play two full games back to back, and the second behaves identically to the first (scores, serve direction, state, CPU mode as intended). Write down why you chose your approach.
    `git commit -m "Add restart"`
 4. **Self-review.** Work through the checklist below and fix what you find, in small commits.

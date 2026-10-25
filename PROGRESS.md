@@ -31,6 +31,9 @@ Add a line after each session: what you did, what confused you, and any question
 |10-20-2026| 01-Pong |10:17 PM | Was treating the spec section like the lesson, woops.|
 |10-20-2026|01-pong|||
 |10-24-2026|01-pong|6:06 PM|Set strecth to canvas so that it resizes automatically. I set the aspect to keep so that the play area doesnt get distorted.|
+|10-24-2026|01-pong|7:28 PM| For this section in https://docs.godotengine.org/en/stable/getting_started/step_by_step/scripting_first_script.html - This expression, Vector2.UP.rotated(rotation) , how does this add velocity? Without the speed does it just make the icnon move up while rotating? |
+|10-24-2026|01-pong|7:49 PM|"Break it on purpose" - Output seems to catch items earlier. If i attempt to run a scene with broken syntax, it shows up in the debugger panel and provides a stack trace|
+|10-24-2026|01-pong|8:01 PM| Stretch goal: Not sure what you are asking for res:// and $NodePath. I don't see anything significantly out of the ordinary. Not exactly sure what $NodePath is, i maybe overthinking it, is it just the paths to the nodes within the scene? Like ColorRect? Not sure.|
 |||||
 
 ## Questions for Review

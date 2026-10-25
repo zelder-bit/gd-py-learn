@@ -18,6 +18,11 @@ match today:
 ```
 `match` is closer to a `switch` that doesn't fall through (no `break` needed), with `_` as the default. Enums are named integers, so use the name, never the number. In JS you'd reach for a string union or `Object.freeze({...})`; this is built in and type-checked.
 
+Three more mechanics you'll need, each shown on weather rather than on your game:
+- **An enum is a type.** `var today: Weather` means "this variable can only hold a `Weather` value", and the editor will flag `today = 5` or a typo like `Weather.SNOWY` before you run.
+- **A function can take an enum as a parameter**, exactly like any other type: `func forecast(w: Weather) -> String:`. This is your first own, non-callback function with a parameter, so notice that Godot never calls it; *you* call it by name from other places (`forecast(Weather.RAINY)`). A `-> void` function returns nothing; one with `-> String` must hit a `return` on every path.
+- **Printing an enum prints its integer.** To get a readable name, look up the `keys()` method that GDScript enums have (the Debugging Toolkit below points at it too).
+
 ### 3. One place for transitions
 The pattern that scales: a single function (call it whatever you like) that takes the *new* state, does the exit/entry work (show/hide UI, start/stop motion, reset timers), and assigns the variable. Nothing else assigns the state variable directly. Then "what happens when we enter GAME_OVER" has exactly one answer, and you can put a `print` there to log every transition, like a state-change audit log.
 
@@ -45,6 +50,21 @@ Pick one and justify it in your PROGRESS.md. The controller option is the more t
 
 **Bridge:** Strategy pattern. Same interface, different backend. Like pointing one load balancer config at different target groups.
 
+### 6. Building a title / game-over overlay
+You already have a HUD on a `CanvasLayer` (Lesson 05). Overlays use the same ingredients, plus a few layout tools:
+1. **Where it goes.** Add a second `CanvasLayer` (or a `Control` under your HUD layer) so the overlay draws above the game and ignores any camera. Name it for what it is, not "CanvasLayer2".
+2. **Layout.** Add a `Control` child (or a `ColorRect` for a dim backdrop) and, with it selected, use the toolbar's **Anchor Preset** dropdown in the 2D viewport (or Inspector > Layout) and pick **Full Rect**. Anchors pin each edge of a `Control` to a fraction of its parent, so the overlay follows the window size. Add `Label`s inside it; give each a preset such as **Center** and set Horizontal/Vertical Alignment on the label for text. Read [Size and anchors](https://docs.godotengine.org/en/stable/tutorials/ui/size_and_anchors.html) for the model: anchors say *where the box attaches*, offsets say *how far from there*.
+3. **Show and hide.** Every `CanvasItem` (so every `Control` and `Label`) has a `visible` property and `show()` / `hide()` methods. Hiding a parent hides its whole subtree. `visible` is just a property, so `lamp_panel.visible = false` and `lamp_panel.hide()` are equivalent. In the editor, the eye icon in the Scene dock sets the starting value.
+4. **Referencing it from code.** The script that owns the state needs a handle on the overlay nodes. You've used `@onready var x = $Child` for your own children (Lesson 01); for a node elsewhere in the tree, `@export var overlay: Control` lets you drag it in via the Inspector, and the type tells autocomplete what you can call on it.
+
+### 7. A key press as an event
+Starting a game or restarting is a one-off *edge*, not a held state (Lesson 02, concept 2). Override `_unhandled_input(event: InputEvent)` and test `event.is_action_pressed("some_action")`. Unlike `Input.is_action_pressed`, this is a method *on the event*, true once for the press that triggered this call. Define the action in the Input Map first (a "start" action and, for the mode choice, a key each). The callback fires in every state, so what the press *means* depends on what the game is doing right now; that is a question for your state variable.
+
+### 8. Switching a node off, and how a parent talks to a child script
+- **Processing on and off.** Every node has `set_process(bool)` and `set_physics_process(bool)`; calling them with `false` stops that node's `_process` / `_physics_process` callbacks without freeing it. The Inspector's `process_mode` (Node > Process > Mode) is the config-time version; `Disabled` there stops the node and, by inheritance, its children. Signals and the node's own properties keep working while it's off.
+- **Reaching a child's script.** `$Controller` gives you the child *node*. If its script defines `var reach: float` or `func wave()`, you can read `$Controller.reach` or call `$Controller.wave()` directly, since parents may call down (Lesson 05). With `@onready var ctl: Node = $Controller`, the type `Node` doesn't know about `reach`, so GDScript resolves it at runtime; give the script a `class_name` (see "Registering named classes" in the GDScript reference) and declare `@onready var ctl: Controller` to get editor checking.
+- **Turning children on and off.** A node can have several children that each have a script, and processing can be switched on or off for each child independently. Keep that tool in mind when you weigh the options in concept 5. It's one possible mechanism, not the required design.
+
 ## Spec
 **User stories**
 - As a player, I see a title screen and press a key to begin.
@@ -64,16 +84,25 @@ Pick one and justify it in your PROGRESS.md. The controller option is the more t
 ## Milestones
 1. **Design the state machine on paper.** List states, events and legal transitions in your notes (a table or sketch).
    ✅ Done when: every state has at least one way in and one way out, and every event from Lesson 05 (goal, delay finished) has a place in the table.
-2. **State enum and single transition function.** Introduce the enum and route everything through it, leaving behaviour unchanged except that the game starts in SERVING.
+2. **State enum and single transition function.** Introduce the enum and route everything through it, leaving behaviour unchanged except that the game starts in SERVING. Take it in three steps:
+   - **a. Declare.** Write the `enum` and a member variable typed with it (concept 2), on the script that owns the score.
+   - **b. The function.** Write your own function that takes the new state as a typed parameter and returns nothing. At first have it only log the old and new names and assign the variable.
+   - **c. Move behaviour in.** One existing behaviour at a time, relocate it from wherever it lives now into the matching `match` branch of that function, running the game after each move.
    ✅ Done when: grepping for the state variable shows exactly one assignment, and a log line prints on every transition.
    `git commit -m "Introduce game state enum"`
-3. **Title and game-over screens.** Add UI for TITLE and GAME_OVER (visibility toggled by state), start with a key press, and check `points_to_win` after each score.
+3. **Title and game-over screens.** Add UI for TITLE and GAME_OVER (visibility toggled by state), start with a key press, and check `points_to_win` after each score. Take it in three steps:
+   - **a. Build the overlay in the editor** with a layer, a full-rect `Control`, and labels (concept 6). Check it looks right at a different window size, then hide it with the eye icon.
+   - **b. Show and hide from code** (concept 6): get the overlay nodes into your script, and make the transition function's branches set their visibility.
+   - **c. Wire the key press** with `_unhandled_input` (concept 7). Add the action to the Input Map, and decide what the press does in each state.
    ✅ Done when: reaching `points_to_win` shows the correct winner, the ball stops, and one key press gets you into a fresh game with scores at zero. Changing `points_to_win` in the Inspector changes the game without code edits.
    `git commit -m "Title and game over flow"`
 4. **Guard the states.** Make sure nothing misbehaves in the wrong state.
    ✅ Done when: on the title screen the paddles don't move and the ball doesn't exist or is still; mashing keys in GAME_OVER never starts a second serve.
    `git commit -m "Gate behaviour by state"`
-5. **CPU controller.** Implement the controller approach you chose and a 1-player option on the title screen.
+5. **CPU controller.** Implement the controller approach you chose and a 1-player option on the title screen. Take it in three steps:
+   - **a. Mode flag.** Get a 1P/2P choice from two keys on the title screen into a variable, before any AI exists. Print it.
+   - **b. Producer.** Write the CPU's decision as its own piece (concept 4) and test it with a `print` of what it would do, before connecting it to a paddle.
+   - **c. Connect and gate.** Hook it to the paddle using your chosen option from concept 5, and use concept 8 to make sure only one producer is active at a time.
    ✅ Done when: in 1-player mode the right paddle tracks the ball; in a rally you can reliably out-angle it with edge hits; the human controls and the CPU never both drive the same paddle.
    `git commit -m "CPU paddle"`
 6. **Tune.** Adjust the exported values live (Remote tree or editor) until the CPU wins roughly 30-40% of points against you.
@@ -127,6 +156,8 @@ The same key event is probably handled by two places. Which should win in which 
 - [Scene organization](https://docs.godotengine.org/en/stable/tutorials/best_practices/scene_organization.html): read this for composition vs. branching in scenes.
 - [Node class](https://docs.godotengine.org/en/stable/classes/class_node.html): read this for `process_mode` and `set_process` for enabling or disabling behaviour.
 - [Button class](https://docs.godotengine.org/en/stable/classes/class_button.html): read this if you build the title screen with buttons rather than key presses.
+- [Size and anchors](https://docs.godotengine.org/en/stable/tutorials/ui/size_and_anchors.html): read this for anchor presets and full-rect overlays.
+- [InputEvent](https://docs.godotengine.org/en/stable/tutorials/inputs/inputevent.html): read this for `_unhandled_input` and `is_action_pressed` on an event.
 - [Control node gallery](https://docs.godotengine.org/en/stable/tutorials/ui/control_node_gallery.html): read this for a quick tour of UI controls.
 - [@GlobalScope math functions](https://docs.godotengine.org/en/stable/classes/class_@globalscope.html): read this for `move_toward`, `clampf`, `signf`, and friends.
 

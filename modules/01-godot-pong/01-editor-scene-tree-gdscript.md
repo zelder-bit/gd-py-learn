@@ -43,6 +43,28 @@ Project Settings (Project menu) holds project-wide config in `project.godot`, a 
 
 **Bridge:** `project.godot` is the config file; the `.godot/` directory is the cache (like `node_modules/` or `.terraform/`). Commit the first, ignore the second.
 
+### 6. Anatomy of the script Godot generated for you
+Open the `.gd` file you attached in milestone 3 and read it line by line before you change anything:
+- **`extends ColorRect`** means this script *is* a `ColorRect`, with extra behaviour added. Every property you can see in that node's Inspector (its colour, size, position…) belongs to your script too, and you can read or assign it **by name, with no prefix**. JS bridge: inside a class method, it's as if `this.` were always implied.
+- **`func _ready() -> void:`** and **`func _process(delta: float) -> void:`** are the two lifecycle hooks from concept 4. Godot calls them; you never call them yourself.
+- **`pass`** is a placeholder meaning "this function does nothing yet", like an empty `{}` body in JS. Replace it with your own lines.
+- **Indentation is the block.** Every line indented one tab under a `func` line belongs to that function. A line back at the left margin is outside every function.
+
+**There are two places a variable can live**, and choosing between them is the first real design decision you'll make:
+| Where you declare it | Lifetime | JS equivalent |
+|---|---|---|
+| At the top of the file, outside any `func` | As long as the node exists; every function can see it. Only these can be `@export`ed. | A class field |
+| Inside a `func` | Created fresh on every call, gone when the function returns. | A `let` inside a method |
+
+`_process` runs about 60 times a second. A value you want to *keep* from one frame to the next can't be recreated on every call.
+
+### 7. How to find out what anything is called
+You'll spend your whole Godot life looking up names, so learn these tools on day one:
+- **Hover over a property in the Inspector.** The tooltip shows the name you use in code, plus a description. The Inspector and your script talk about the same properties.
+- **Autocomplete.** Start typing inside a function body and the editor lists what this node has. Typing the first few letters of a property you saw in the Inspector will find it.
+- **Ctrl+click** any name in the script editor to jump to its documentation. **F1** (Search Help) opens the class reference *inside* the editor, so you don't need a browser.
+- **Some properties have parts.** A `Vector2` value has `x` and `y` components, and you can read or assign one component on its own. Arithmetic and compound assignment (`+=`, `-=`, `*=`) work like they do in JS.
+
 ## Spec
 
 **User stories**
@@ -74,7 +96,10 @@ Project Settings (Project menu) holds project-wide config in `project.godot`, a 
    ✅ **Done when:** Running the game prints your message exactly once in the Output panel.
    *Commit.*
 
-4. **Drift with delta.** In `_process`, make the rectangle's position change along x at a speed in pixels per second. Declare the speed as a typed variable.
+4. **Drift with delta.** Take this in three steps:
+   - **a. Guided walkthrough (~20 min).** Make a throwaway scene (not `main.tscn`) and work through the official [Creating your first script](https://docs.godotengine.org/en/stable/getting_started/step_by_step/scripting_first_script.html) tutorial. It walks through a sprite that turns and moves over time, explaining each line. Type every line yourself rather than copy-pasting it. Delete the throwaway scene when you're done.
+   - **b. Close the tutorial.** Now, from memory, apply the same idea to your own `ColorRect` in `main.tscn`. It should move horizontally, at a speed you declare as a typed variable, in pixels per second. Use concepts 4, 6 and 7 above. Decide where the speed variable belongs (concept 6), and find the name of the property that holds the rectangle's position (concept 7).
+   - **c. If you're stuck,** reopen the tutorial and compare it with your attempt, then close it again and fix yours. Peeking is fine, but copying isn't. The point is that you can rebuild it without the tutorial.
    ✅ **Done when:** At speed 200 it crosses a 1280-wide window in about 6.4 s, timed by you with a stopwatch. Temporarily changing Project Settings > Application > Run > Max FPS to 30 (and back) does not change the crossing time noticeably.
    *Commit.*
 
