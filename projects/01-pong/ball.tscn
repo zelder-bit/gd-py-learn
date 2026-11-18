@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://dfrmjb1wdlf7s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ccrku"]
+size = Vector2(40, 40)
+
+[node name="Ball" type="CharacterBody2D" unique_id=1576427354]
+
+[node name="ball_shape" type="ColorRect" parent="." unique_id=923900899]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ball_collision" type="CollisionShape2D" parent="." unique_id=258825424]
+position = Vector2(20, 20)
+shape = SubResource("RectangleShape2D_ccrku")

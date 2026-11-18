@@ -6,17 +6,15 @@
 size = Vector2(44, 145)
 
 [node name="paddle" type="CharacterBody2D" unique_id=461356011]
-position = Vector2(417, 235)
+position = Vector2(360, 200)
 script = ExtResource("1_0sbc1")
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=855290199]
-offset_left = -22.0
-offset_top = -70.0
-offset_right = 22.0
-offset_bottom = 75.0
+[node name="paddle_shape" type="ColorRect" parent="." unique_id=855290199]
+offset_right = 44.0
+offset_bottom = 145.0
 metadata/_edit_use_anchors_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1118508901]
-position = Vector2(0, 3.0000153)
+[node name="paddle_collision" type="CollisionShape2D" parent="." unique_id=1118508901]
+position = Vector2(22, 72.5)
 shape = SubResource("RectangleShape2D_ccrku")
 debug_color = Color(0.9470019, 6.160736e-06, 0.5874687, 0.41960785)

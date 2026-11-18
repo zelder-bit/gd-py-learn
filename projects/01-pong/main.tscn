@@ -1,13 +1,21 @@
 [gd_scene format=3 uid="uid://d0pe57adokytc"]
 
 [ext_resource type="PackedScene" uid="uid://dwwa3gegcb0we" path="res://paddle.tscn" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://dfrmjb1wdlf7s" path="res://ball.tscn" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://bdhkhlrvxwpve" path="res://ball.gd" id="3_h2yge"]
 
 [node name="Main" type="Node2D" unique_id=109650123]
 
 [node name="paddle_player1" parent="." unique_id=461356011 instance=ExtResource("1_ig7tw")]
-position = Vector2(360, 200)
+speed = 500.0
 
 [node name="paddle_player2" parent="." unique_id=1410124550 instance=ExtResource("1_ig7tw")]
 position = Vector2(1560, 200)
+speed = 500.0
 up_action = "player2_up"
 down_action = "player2_down"
+
+[node name="Ball" parent="." unique_id=1576427354 instance=ExtResource("2_0xm2m")]
+position = Vector2(970, 447)
+script = ExtResource("3_h2yge")
+speed = null

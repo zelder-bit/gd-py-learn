@@ -83,10 +83,10 @@ Do these once in a scratch scene and they stop being scary:
 - [x] The paddle script has exported variables for its up action, down action and speed. The Inspector shows them on each instance.
 - [x] `main.tscn` instances the paddle scene twice, one on the left and one on the right, with different action names set on each.
 - [x] The script contains no hard-coded key names (no `KEY_W` and no raw action strings baked into its logic as the only option).
-- [ ] Movement is in pixels per second, scaled by `delta`, and runs in the physics tick.
-- [ ] Both paddles are fully clamped inside the viewport, including the paddle's own half height.
-- [ ] Both paddles can move at the same time (two players on one keyboard).
-- [ ] The Lesson 01 throwaway is gone.
+- [x] Movement is in pixels per second, scaled by `delta`, and runs in the physics tick.
+- [x] Both paddles are fully clamped inside the viewport, including the paddle's own half height.
+- [x] Both paddles can move at the same time (two players on one keyboard).
+- [x] The Lesson 01 throwaway is gone.
 
 ## Milestones
 
@@ -221,5 +221,8 @@ Compute the min and max from the viewport height and the paddle's half height, t
 
 ## Reflection
 1. What did you choose as the paddle's root node type, and what would break or get harder with each of the alternatives?
+  2. Root node type is characterbody2d. Chose this because pong has simple movement and it affects the physics of others. The guide mentions using this for player controlled characters.
 2. Where does the "which player am I" information live now, and why is that better (or worse) than two separate scripts?
+  3. Better because you only have to adjust one script. Worse because the exported variables can make it confusing to a new comer and you may think you are not adjusting the right one or if there is even one attached to the other player.
 3. You used polling for movement. Name one thing in Pong where an event callback would be the better fit, and say why.
+  4. Polling because users tend to hold the keys when playing pong. Callbacks are for one off actions so i am not sure if that would even work.
