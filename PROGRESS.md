@@ -3,7 +3,7 @@
 ## Status
 | Module | Track | Status | Started | Reviewed |
 |---|---|---|---|---|
-| 01 · Pong | Godot | 🟢 In progress (Lesson 03 next) | 2026-10-20 | |
+| 01 · Pong | Godot | 🟢 In progress (Lesson 04 next) | 2026-10-20 | |
 | 02 · Log Analyzer CLI | Python | 🔒 Locked (unlocks after Module 1 review) | | |
 | 03 · Snake | Godot | 🔒 | | |
 | 04 · System Monitor TUI | Python | 🔒 | | |
@@ -14,7 +14,7 @@
 ## Module 1 · Pong (`projects/01-pong/`)
 - [x] Lesson 01 · Editor, scene tree & GDScript basics
 - [x] Lesson 02 · Input & paddles
-- [ ] Lesson 03 · The ball: velocity & wall bounces
+- [x] Lesson 03 · The ball: velocity & wall bounces
 - [ ] Lesson 04 · Paddle collisions & bounce angles
 - [ ] Lesson 05 · Goals, scoring & signals
 - [ ] Lesson 06 · Game states & the CPU paddle
@@ -136,12 +136,13 @@ GDScript reminds me alot of python, which i have used in work / generated a lot 
 
 ---
 
-## Lesson 03 · The Ball: Velocity & Wall Bounces
+## Lesson 03 · The Ball: Velocity & Wall Bounces ✅
 
 ### Decisions
 | Decision | Choice | My reasoning |
 |---|---|---|
 | Ball body type | `CharacterBody2D` + `move_and_collide()` | |
+| Motion storage | Store velocity; `ball_direction` only builds the serve | Serve needs a direction; after that the bounce works on velocity. |
 
 ### Session log
 
@@ -160,6 +161,33 @@ GDScript reminds me alot of python, which i have used in work / generated a lot 
 
 > 💬 Right: same `clamp()` call, new bounds. With a centered origin each limit is the screen edge offset by half the paddle's height.
 - 9:59 PM: stopped for the night (~1 hr). Next session starts at the bounce (reading list for bounce next: `move_and_collide()` return → `KinematicCollision2D.get_normal()` → `Vector2.bounce()`).
+
+**2026-11-22**
+- Bounce attempt: read the collision and called `bounce()` on `ball_velocity`, but the ball still doesn't bounce. The docs' example works, mine doesn't.
+
+> 💬 The docs' bullet stores `velocity` as a member variable, so the bounced value is still there next frame. `ball_velocity` is a local `var` that's rebuilt from `ball_direction * speed` at the top of every frame, so the bounce gets thrown away. Bounce the thing that survives between frames.
+- 2:03 PM: ball bounces off walls now (velocity moved out of the per-frame local). Milestone 4 next: 60 s bounce test + print velocity length per bounce.
+- Speed stays the same on every bounce (printed length). Raised speed to 4000: still bounces, never escapes.
+- Keeping `ball_direction`: it's needed in `_ready()` to build the initial serve velocity.
+
+> 💬 Agreed it's needed, but only inside `_ready()`. That makes it a candidate for a local `var` there rather than a member variable. Your call; either is fine for Pong.
+- 3:06 PM: 20+ serves, none near-vertical. Lesson 03 done.
+
+---
+
+## Lesson 04 · Paddle Collisions & Bounce Angles
+
+### Decisions
+| Decision | Choice | My reasoning |
+|---|---|---|
+| Paddle vs. wall classification | | |
+| Max bounce angle | | |
+
+### Session log
+
+**2026-11-22, 3:06 PM**
+- Started Lesson 04.
+- Milestone 1: ball already bounces off paddles with no new code; the wall bounce handles any collider.
 
 ---
 

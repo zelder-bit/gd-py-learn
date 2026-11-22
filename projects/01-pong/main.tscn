@@ -23,6 +23,15 @@ down_action = "player2_down"
 [node name="Ball" parent="." unique_id=1576427354 instance=ExtResource("2_0xm2m")]
 position = Vector2(970, 447)
 script = ExtResource("3_h2yge")
+speed = 4000.0
 
 [node name="wall_2" parent="." unique_id=1099104541 instance=ExtResource("1_1bvp3")]
 position = Vector2(1051, 1145)
+
+[node name="wall_3" parent="." unique_id=1325486283 instance=ExtResource("1_1bvp3")]
+position = Vector2(-65, 488)
+rotation = 1.5707964
+
+[node name="wall_4" parent="." unique_id=272087245 instance=ExtResource("1_1bvp3")]
+position = Vector2(1985, 406)
+rotation = 1.5707964
