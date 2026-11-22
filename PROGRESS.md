@@ -3,7 +3,7 @@
 ## Status
 | Module | Track | Status | Started | Reviewed |
 |---|---|---|---|---|
-| 01 · Pong | Godot | 🟢 In progress (Lesson 02 next) | 2026-10-20 | |
+| 01 · Pong | Godot | 🟢 In progress (Lesson 03 next) | 2026-10-20 | |
 | 02 · Log Analyzer CLI | Python | 🔒 Locked (unlocks after Module 1 review) | | |
 | 03 · Snake | Godot | 🔒 | | |
 | 04 · System Monitor TUI | Python | 🔒 | | |
@@ -13,7 +13,7 @@
 
 ## Module 1 · Pong (`projects/01-pong/`)
 - [x] Lesson 01 · Editor, scene tree & GDScript basics
-- [ ] Lesson 02 · Input & paddles
+- [x] Lesson 02 · Input & paddles
 - [ ] Lesson 03 · The ball: velocity & wall bounces
 - [ ] Lesson 04 · Paddle collisions & bounce angles
 - [ ] Lesson 05 · Goals, scoring & signals
@@ -129,11 +129,37 @@ GDScript reminds me alot of python, which i have used in work / generated a lot 
 
 ---
 
-## Lesson 02 · Input & Paddles
+## Lesson 02 · Input & Paddles ✅
 
 ### Session log
 - I'll pick CharacterBody2D because an example you provide says paddles LOL. But because it also has collision auto detected for I imagine it will be the easiest and it expects to be moved unlike a rigid / static one.
-- 
+
+---
+
+## Lesson 03 · The Ball: Velocity & Wall Bounces
+
+### Decisions
+| Decision | Choice | My reasoning |
+|---|---|---|
+| Ball body type | `CharacterBody2D` + `move_and_collide()` | |
+
+### Session log
+
+**2026-11-21, 9:00 PM MT (2–3 hr block)**
+- Plan for tonight: finish 03 (walls), then 04 and 05 core milestones only. 06–07 next session.
+- Already done: ball scene, random serve angle left/right (printed to verify).
+- Q: how to center the parent node onto the ColorRect?
+
+> 💬 Do it the other way round: leave the parent alone and move the child. A ColorRect's `position` is its **top-left corner**, while a Node2D's origin is a point. Set the rect's position to minus half its size so it sits centered on the origin. Collision shapes are already centered, so the visual and the hitbox will then line up.
+- Walls added. Ball hits a wall and stops.
+
+> 💬 That's expected at this stage: `move_and_collide()` stops at the contact point and hands you back a report, and nothing changes direction until your code reads that report.
+- Fixed origin points on the other objects (rects centered on their parents). Had to redo `paddle.gd` afterwards; resolved now.
+
+- The clamp itself was fine; the work was finding the right values for its limits (`top_height`, `bottom_height`) now that the origin is the paddle's center.
+
+> 💬 Right: same `clamp()` call, new bounds. With a centered origin each limit is the screen edge offset by half the paddle's height.
+- 9:59 PM: stopped for the night (~1 hr). Next session starts at the bounce (reading list for bounce next: `move_and_collide()` return → `KinematicCollision2D.get_normal()` → `Vector2.bounce()`).
 
 ---
 

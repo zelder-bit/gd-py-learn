@@ -13,8 +13,8 @@ var bottom_height
 func _ready() -> void:
 	screen_Size = get_viewport_rect().size
 	paddle_Size = $paddle_shape.size.y
-	top_height = 0
-	bottom_height = screen_Size.y - paddle_Size
+	top_height = (0.5 * paddle_Size)
+	bottom_height = screen_Size.y - (.5 * paddle_Size)
 	
 	
 func _process(delta: float) -> void:
