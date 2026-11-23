@@ -6,7 +6,11 @@ extends CharacterBody2D
 
 var ball_collision : KinematicCollision2D
 var ball_velocity : Vector2
-var number_of_bounces := 0
+var number_of_bounces = {
+	"paddle_hit" : 0,
+	"wall_hit" : 0,
+	"total" : 0
+}
 
 func _ready() -> void:
 	var ball_direction : Vector2
@@ -18,14 +22,26 @@ func _ready() -> void:
 	ball_velocity = ball_direction * speed
 	print("This initial Vector2 of ball_velocity is " + str(ball_velocity))
 	print("Initial Angle is: " + str(rad_to_deg(ball_direction.angle())))
-
 	
 	
 
 func _physics_process(delta: float) -> void:
 	ball_collision = move_and_collide(ball_velocity * delta)
 	if ball_collision:
+		var ball_collider = ball_collision.get_collider()
+		if (ball_collider.is_in_group("paddle")):
+			number_of_bounces.paddle_hit = number_of_bounces.paddle_hit + 1
+			number_of_bounces.total = number_of_bounces.total + 1
+		else:
+			number_of_bounces.wall_hit = number_of_bounces.wall_hit + 1
+			number_of_bounces.total	= number_of_bounces.total + 1
+		#keep velocity on bounce:
 		ball_velocity = ball_velocity.bounce(ball_collision.get_normal())
-		number_of_bounces = number_of_bounces + 1
-		print("Bounce Counter is " + str(number_of_bounces) + " and this bounce had a velocity of: " + str(ball_velocity))
+		
+		#print / debug shit
+		print("This is the ball_collider variable: " + str(ball_collider))
+		print("Counter: Paddle # " + str(number_of_bounces.paddle_hit) + 
+			" Wall # " + str(number_of_bounces.wall_hit) + 
+			" Total # " + str(number_of_bounces.total))
+		
 	

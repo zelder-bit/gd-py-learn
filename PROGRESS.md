@@ -180,7 +180,7 @@ GDScript reminds me alot of python, which i have used in work / generated a lot 
 ### Decisions
 | Decision | Choice | My reasoning |
 |---|---|---|
-| Paddle vs. wall classification | | |
+| Paddle vs. wall classification | Groups (set in the Node dock GUI) | Most flexible and easy to see; Godot builds other features around groups too. |
 | Max bounce angle | | |
 
 ### Session log
@@ -188,6 +188,14 @@ GDScript reminds me alot of python, which i have used in work / generated a lot 
 **2026-11-22, 3:06 PM**
 - Started Lesson 04.
 - Milestone 1: ball already bounces off paddles with no new code; the wall bounce handles any collider.
+- Milestone 2a: chose groups for classification, added via the GUI. Added on both paddle instances in Main (ctrl-select); both show the group.
+
+> 💬 Works, but the tag lives on the *instances*, not the paddle scene. A third paddle (or a re-instanced one) wouldn't have it. Putting it in `paddle.tscn` makes "is a paddle" part of what a paddle is. Same idea as baking config into an AMI vs. setting it per-instance by hand.
+- Moved the group to `paddle.tscn` (root node, listed under "Scene Groups").
+- Milestone 2 done: prints "paddle" / "wall" correctly per collision, plus a hit counter for each.
+
+> 💬 Counter bug: the wall lines run on every collision, paddle or not, so a paddle hit counts as a wall hit too and adds 2 to the total. Check that wall + paddle = total.
+- Fixed: was missing the `else`. Counters add up now. Milestone 2 ✅
 
 ---
 
